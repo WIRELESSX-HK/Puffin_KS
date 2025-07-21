@@ -6,4 +6,9 @@ see the picture below, connect TX and RX on FC to RX and TX on puffin. Connect t
 <img width="729" height="480" alt="Screenshot 2025-07-21 at 2 47 08 PM" src="https://github.com/user-attachments/assets/bb47ea41-10c8-4ddf-bf1a-aff8c0c8550f" />  
 Connect RX from FC to pin 19 (TX1) on puffin, TX from FC to pin 21 (RX1) on puffin. Connect GND to GND.  
 <img width="1008" height="415" alt="Screenshot 2025-07-21 at 2 52 06 PM" src="https://github.com/user-attachments/assets/e423e572-3cb2-4020-81dc-42600205f354" />
-Making sure puffin has a **power supply** either from the battery or from FC. then you are all set!  
+Making sure puffin has a **power supply** either from the battery or from FC. Then you are all set!  
+## Baud rate 
+Making sure the baud rate of your FC UART is 115200
+## Control software 
+### Download control software 
+You need to download a zip file containing control software. the control software is web based 
