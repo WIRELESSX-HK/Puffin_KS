@@ -7,10 +7,10 @@ This repository contains different control software packages for the Puffin 4G m
 - **user_manual/**: Documentations
 
 ## Join us on discord 
-https://discord.gg/uz5kGyhVqU
+https://discord.gg/uz5kGyhVqU  
 Join us on discord to get your ID NO. and more info 
 ## Youtube Channel 
-follow us on youtube, there are video tutorials of using Puffin board 
+follow us on youtube, there are video tutorials of using Puffin board   
 https://www.youtube.com/@wx-link
 ## Quick Start 
 ### Using control panel 
