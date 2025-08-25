@@ -3,10 +3,11 @@
 A typical RC car includes a radio receiver, an ESC (Electronic Speed Controller), and a steering servo. The ESC and servo are usually connected directly to the receiver. Puffin replaces the radio receiver in this setup.<br>
 Before using Puffin, ensure that your RC car has a standalone ESC, steering servo, and RF receiver. Some RC cars use an all-in-one unit that combines the receiver and ESC — in such cases, Puffin is not compatible.
 ## Hardware setup 
-Open your RC car, take out the Radio receiver and connect ESC and servo to the corresponding pins on Puffin, then you are all set ! <br>
-<img width="749" height="521" alt="Screenshot 2025-07-21 at 6 43 31 PM" src="https://github.com/user-attachments/assets/bc9dd6e5-251d-4c19-89c7-327da851eecd" /> <br>
+Open your RC car, take out the Radio receiver and connect ESC and servo to the corresponding pins on Puffin, then you are all set ! 
+<br>
+<img width="793" height="528" alt="Screenshot 2025-08-25 at 3 12 42 PM" src="https://github.com/user-attachments/assets/0e9ea3c9-1373-4968-b2ea-af4411f6d9be" />
 <img width="1008" height="415" alt="Screenshot 2025-07-21 at 2 52 06 PM" src="https://github.com/user-attachments/assets/29599d76-b217-445c-bbbb-59fd2e96062d" /><br>
-Connect Servo to Pin 1 3 5, namely GND, VCC, PWM2, and connect ESC to Pin 2 4 6, namely GND VCC PWM1. That's it all !  
+Connect Servo to Pin 2 4 6, namely GND, VCC, PWM1, and connect ESC to Pin 1 3 5, namely GND VCC PWM2. That's it all !  
 ## Control Software 
 Download the zip file 4g_rc_car.zip. unzip the file. In the folder you will see a html file called "Puffin_RC_model.html", double click on it. <br>
 Type in your ID no. and click on "connect", you should be able to see live video streaming and you can control the car using the buttons on the control panel. <br>
