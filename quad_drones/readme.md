@@ -7,8 +7,12 @@ see the picture below, connect TX and RX on FC to RX and TX on puffin. Connect t
 Connect RX from FC to pin 19 (TX1) on puffin, TX from FC to pin 21 (RX1) on puffin. Connect GND to GND.  
 <img width="1008" height="415" alt="Screenshot 2025-07-21 at 2 52 06 PM" src="https://github.com/user-attachments/assets/e423e572-3cb2-4020-81dc-42600205f354" />
 Making sure puffin has a **power supply** either from the battery or from FC. Then you are all set!  
-## Baud rate 
-Making sure the baud rate of your FC UART is 115200
+## Flight Controller Parameter setup 
+Use UART port (TELEM) port and connet RX, TX, GND to TX, RX, GND to puffin board. In mission planner, setup the parameters in the following image.<br>
+<img width="521" height="192" alt="Screenshot 2025-08-29 at 4 33 22 PM" src="https://github.com/user-attachments/assets/53e752a2-aff9-40be-b93a-e5becb1a5786" /><br>
+baud rate:115200<br>
+options:0 <br>
+protocol:2<br>
 ## Control software 
 ### Download control software 
 You need to download a zip file containing control software. the control software is web based  
