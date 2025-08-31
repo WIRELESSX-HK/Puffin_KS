@@ -1,0 +1,219 @@
+var previousAxes = [];
+var previousButtons = [];
+let usingGamepad=false;
+let axesUpdateTimer = null; // separate DOM update timer
+const gamepadConfig = {
+    axes: {
+        // map joystick to PWM channels 
+        0: "ipwm1", // left joystick X-axis controls PWM1
+        1: "ipwm6", // left joystick Y-axis controls PWM2
+        2: "ipwm2", // right joystick X-axis controls PWM3
+        3: "ipwm3"  // right joystick Y-axis controls PWM4
+    },
+    // map buttons to PWM channels 
+    buttons: {
+        4: "ipwm4", // left shoulder button controls PWM5
+        5: "ipwm5", // right shoulder button controls PWM6
+
+         // added GPIO mapping (same format as PWM mapping)
+        6: "gpio1",  // A button controls GPIO1
+        7: "gpio2",  // B button controls GPIO2
+        8: "gpio3",   // X button controls GPIO3
+                // added brake function: bound to button 9 (adjust index based on controller)
+        11: { type: "brake", target: "ipwm6" } , // brake key: PWM1 goes to 0 when pressed
+        7 : { type: "brake", target: "ipwm1" }
+    },
+    // joystick sensitivity threshold (to ignore small movements)
+    deadzone: 0.05,
+    // PWM output range mapping
+    pwmRange: {
+        min: 0,
+        max: 255
+    }
+};
+
+// gamepad connection event
+window.addEventListener("gamepadconnected", function(e) {
+  document.getElementById("status").innerHTML = "gamepad connected  " + e.gamepad.index + "： " + e.gamepad.id;
+  usingGamepad = true;
+  disablePwmSliders();
+  var gamepad = navigator.getGamepads()[e.gamepad.index];
+  previousAxes = gamepad.axes.slice();
+  previousButtons = gamepad.buttons.map(button => button.value);
+  
+  // optimization: use setInterval for high-frequency polling (independent of rendering)
+  clearInterval(axesUpdateTimer);
+  axesUpdateTimer = setInterval(updateStatus, 50); // 50ms/次（20Hz）
+});
+
+// gamepad disconnection event
+window.addEventListener("gamepaddisconnected", function(e) {
+  document.getElementById("status").innerHTML = "gamepad disconnected from index " + e.gamepad.index + " disconnected";
+  usingGamepad = false;
+  enablePwmSliders();
+  clearInterval(axesUpdateTimer); // stop timer
+});
+
+// optimization: separate state check and DOM update to reduce rendering load
+let lastDomUpdateTime = 0;
+function updateStatus() {
+  var gamepad = navigator.getGamepads()[0];
+  if (!gamepad || !usingGamepad) {
+    document.getElementById("status").innerHTML = "no connected ";
+    return;
+  }
+
+  // 1. high-frequency command handling (non-blocking)
+  // joystick controls PWM
+  for (const [axisIndex, pwmChannel] of Object.entries(gamepadConfig.axes)) {
+    const axisValue = gamepad.axes[axisIndex];
+    if (Math.abs(axisValue) < gamepadConfig.deadzone) continue;
+    
+    const pwmValue = mapAxisToPwm(axisValue);
+    setPwmFromGamepad(pwmChannel, pwmValue);
+  }
+
+// buttons control PWM and GPIO
+for (const [buttonIndex, target] of Object.entries(gamepadConfig.buttons)) {
+    const button = gamepad.buttons[buttonIndex];
+    const isPressed = button.pressed;
+    
+    // determine if control is PWM, GPIO, or brake
+    if (typeof target === "string") {
+        // original PWM or GPIO string mapping logic
+        if (target.startsWith("ipwm")) {
+            // PWM control logic (unchanged)
+            const pwmValue = isPressed ? gamepadConfig.pwmRange.max : gamepadConfig.pwmRange.min;
+            if (pwmValue !== (previousButtons[buttonIndex] > 0.5 ? gamepadConfig.pwmRange.max : gamepadConfig.pwmRange.min)) {
+                setPwmFromGamepad(target, pwmValue);
+                previousButtons[buttonIndex] = button.value;
+            }
+        } else if (target.startsWith("gpio")) {
+            // GPIO control logic (unchanged)
+            const gpioNumber = target.replace("gpio", "");
+            if (isPressed && !previousButtons[buttonIndex]) {
+                const currentState = document.getElementById(`gpio${gpioNumber}-led`)?.classList.contains('on') || false;
+                if (currentState) {
+                    window[`setGpio${gpioNumber}_l`]();
+                } else {
+                    window[`setGpio${gpioNumber}_h`]();
+                }
+            }
+            previousButtons[buttonIndex] = isPressed;
+        }
+    } else if (target.type === "brake") {
+        // added brake function logic
+        if (isPressed) {
+            if(target.target=="pwm1")
+        {
+            // when brake is pressed, force target PWM to 0
+            setPwmFromGamepad(target.target, 0);
+            console.log(`brake triggered：${target.target} 已归0`);
+        }
+        else {
+             // when brake is pressed, force target PWM to 0
+            setPwmFromGamepad(target.target, 0);
+            console.log(`brake triggered：${target.target} 已归0`);
+        }
+            
+        }
+        previousButtons[buttonIndex] = isPressed;
+    }
+  
+}
+updateGamepadUI(gamepad);
+}
+// handle UI update separately, reduce frequency
+function updateGamepadUI(gamepad) {
+  document.getElementById("details").innerHTML = "ID: " + gamepad.id +
+    "<br>buttons: " + gamepad.buttons.length +
+    "<br>aixs: " + gamepad.axes.length;
+
+  // joystick status UI
+  var axesInfo = "axis status：<br>";
+  gamepad.axes.forEach(function(axis, index) {
+    const changed = Math.abs(axis - previousAxes[index]) > 0.1;
+    axesInfo += `<span${changed ? ' class="changed"' : ''}>axis ${index}: ${axis.toFixed(4)}</span><br>`;
+    previousAxes[index] = axis;
+  });
+  document.getElementById("axes").innerHTML = axesInfo;
+
+  // button status UI
+  var buttonsInfo = "button status：<br>";
+  gamepad.buttons.forEach(function(button, index) {
+    const changed = Math.abs(button.value - previousButtons[index]) > 0.1;
+    buttonsInfo += `<span${changed ? ' class="changed"' : ''}>button ${index}: ${button.value.toFixed(4)}</span><br>`;
+  });
+  document.getElementById("buttons").innerHTML = buttonsInfo;
+}
+
+
+function mapAxisToPwm(axisValue) {
+    // map -1 to 1 range to 0 to 255 range
+    return Math.round(((axisValue + 1) / 2) * (gamepadConfig.pwmRange.max - gamepadConfig.pwmRange.min) + gamepadConfig.pwmRange.min);
+}
+
+// set PWM value from gamepad
+function setPwmFromGamepad(pwmChannel, value) {
+     const limitedChannels = ["ipwm6"];  // channels requiring speed limit
+    const maxSpeed = 175;  // maximum speed for these channels
+    
+    // if restricted channel, force max limit
+    if (limitedChannels.includes(pwmChannel)) {
+        value = Math.min(value, maxSpeed);
+        
+    }
+    // update slider UI display
+    const slider = document.getElementById(pwmChannel);
+    const valueDisplay = document.getElementById(`${pwmChannel}-value`);
+    
+    if (slider && valueDisplay) {
+        slider.value = value;
+        valueDisplay.textContent = `${pwmChannel}: ${value}`;
+    }
+    
+    // send PWM command
+    const channelNumber = parseInt(pwmChannel.replace("ipwm", ""));
+    const byte1 = 0xCC;     // fixed header byte
+    const byte2 = 0x03;     // fixed command type
+    const byte3 = 0x00 + channelNumber;  // PWM channel number
+    const byte4 = 0xFA;     // fixed checksum byte
+    const byte5 = value;    // PWM value
+    
+    const pwmData = [byte1, byte2, byte3, byte4, byte5];
+    send_ipwm_Command(pwmData);
+}
+
+// disable PWM sliders
+function disablePwmSliders() {
+    for (let i = 1; i <= 6; i++) {
+        const slider = document.getElementById(`ipwm${i}`);
+        if (slider) {
+            slider.disabled = true;
+            slider.style.opacity = "0.5";
+        }
+    }
+    // disable settings button
+    const settingsButton = document.querySelector("button[onclick='openipwmSettings()']");
+    if (settingsButton) {
+        settingsButton.disabled = true;
+        settingsButton.style.opacity = "0.5";
+    }
+}
+
+// enable PWM sliders
+function enablePwmSliders() {
+    for (let i = 1; i <= 6; i++) {
+        const slider = document.getElementById(`ipwm${i}`);
+        if (slider) {
+            slider.disabled = false;
+            slider.style.opacity = "1";
+        }
+    }
+    // enable settings button
+    const settingsButton = document.querySelector("button[onclick='openipwmSettings()']");
+    if (settingsButton) {
+        settingsButton.disabled = false;
+        settingsButton.style.opacity = "1";
+    }
+}
