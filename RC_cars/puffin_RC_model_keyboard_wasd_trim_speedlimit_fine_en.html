@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WirelessX Puffin Drive RC Model Car — WASD + Trim + Speed Limit + Fine Zone</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: lightblue; margin: 1; }
+    #placeholder { width:1280px; height:720px; border:1px solid black; position:absolute; top:10px; left:150px; }
+    #remote-video { display:none; width:1280px; height:720px; border:1px solid black; position:absolute; top:10px; left:150px; }
+    .image-container { position:absolute; left:580px; top:710px; }
+    #connectTimeContainer { position:absolute; top:840px; left:340px; transform:translateX(-50%); width:200px; height:50px; display:flex; align-items:center; justify-content:center; }
+    #connectTime { font-size:18px; background-color:red; color:white; padding:5px 10px; border-radius:5px; }
+    .btn {
+      border:none; cursor:pointer; border-radius:10%; display:flex; align-items:center; justify-content:center; overflow:visible;
+      box-shadow:0 0 10px 2px rgba(0,0,0,0); animation: blinker 1s linear infinite;
+    }
+    #light-button1 { position:absolute; left:240px; top:800px; width:90px; height:40px; background:linear-gradient(to right, rgba(210,1,0,1), rgba(210,1,0,1)); }
+    #light-button2 { position:absolute; left:350px; top:800px; width:90px; height:40px; background:linear-gradient(to right, rgba(0,100,145,1), rgba(0,100,145,1)); }
+    #light-button3 { position:absolute; left:1100px; top:800px; width:60px; height:30px; background:linear-gradient(to right, rgba(0,100,145,1), rgba(0,100,145,1)); }
+    #light-button4 { position:absolute; left:1200px; top:800px; width:60px; height:30px; background:linear-gradient(to right, rgba(0,100,145,1), rgba(0,100,145,1)); }
+    #light-button5 { position:absolute; left:1150px; top:760px; width:60px; height:30px; background:linear-gradient(to right, rgba(0,100,145,1), rgba(0,100,145,1)); }
+    #light-button6 { position:absolute; left:1150px; top:840px; width:60px; height:30px; background:linear-gradient(to right, rgba(0,100,145,1), rgba(0,100,145,1)); }
+    #light-button7 { position:absolute; left:1300px; top:750px; width:60px; height:30px; background:linear-gradient(to right, rgba(0,100,145,1), rgba(0,100,145,1)); }
+    #light-button8 { position:absolute; left:1300px; top:800px; width:60px; height:30px; background:linear-gradient(to right, rgba(0,100,145,1), rgba(0,100,145,1)); }
+    .button-texta { font-size:10px; font-weight:bold; color:#fff; }
+    #button_like_text_a { position:absolute; left:180px; top:750px; width:100px; height:30px; border:none; background:transparent; color:black; font-size:12px; font-weight:bold; }
+    #button_like_text_c { position:absolute; left:10px; top:800px; width:200px; height:30px; border:none; background:transparent; color:black; font-size:20px; font-weight:bold; }
+    #joystickValue { position:absolute; left:900px; top:770px; font-size:16px; font-weight:bold; color:black; }
+    #throttleValue { position:absolute; left:900px; top:790px; font-size:16px; font-weight:bold; color:black; }
+    #speedValue { position:absolute; left:900px; top:810px; font-size:16px; font-weight:bold; color:black; }
+    #gamepadStatus { position:absolute; left:900px; top:750px; font-size:16px; font-weight:bold; color:black; }
+    #vehicleStatus { position:absolute; left:900px; top:850px; font-size:16px; font-weight:bold; color:black; }
+    #directionStatus { position:absolute; left:900px; top:830px; font-size:16px; font-weight:bold; color:black; }
+    #controlMode { position:absolute; left:900px; top:730px; font-size:16px; font-weight:bold; color:black; }
+    /* New UI blocks */
+    #speedLimitContainer, #trimContainer, #fineThrottleContainer {
+      position:absolute; left:30px; width:280px; padding:10px; background:rgba(255,255,255,.75);
+      border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.15);
+    }
+    #speedLimitContainer { top:120px; }
+    #trimContainer { top:220px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    #fineThrottleContainer { top:320px; }
+    .mini { padding:4px 8px; border-radius:8px; background:#eee; border:1px solid #ccc; cursor:pointer; }
+    .mini:active { transform:scale(.98); }
+    #maxSpeedSlider, #fineZoneSlider, #fineStepSlider, #coarseStepSlider { width:100%; }
+    .kbd { display:inline-block; padding:2px 6px; background:#222; color:#fff; border-radius:4px; font-size:12px; }
+  </style>
+</head>
+<body style="background-color: rgba(34, 24, 39, 0.5)">
+  <img id="placeholder" src="resource/puffin_bgp.png" alt="Loading...">
+  <video autoplay="True" controls muted id="remote-video" playsinline></video>
+
+  <button id="button_like_text_c">Control Panel</button>
+  <button id="button_like_text_a">Puffin ID</button>
+  <div class="image-container"><img src="resource/方向盘1.png" alt="Steering Wheel"></div>
+  <input id="roomIdInput" style="position:absolute; left:270px; top:740px; font-size:14px; width:160px; height:40px; background-color:black; color:white;" type="text" value="5c6e0fe20108a"/>
+  <span style="position:absolute; left:100px; top:900px; font-size:16px; color:#f7f0f0;">Version: 20250902-FTZ</span>
+
+  <!-- Connect/Disconnect -->
+  <div id="light-button1" class="btn"><span class="button-texta">Connect</span></div>
+  <div id="light-button2" class="btn"><span class="button-texta">Disconnect</span></div>
+
+  <!-- Existing directional test buttons -->
+  <div id="light-button3" class="btn"><span class="button-texta">LEFT</span></div>
+  <div id="light-button4" class="btn"><span class="button-texta">RIGHT</span></div>
+  <div id="light-button5" class="btn"><span class="button-texta">UP</span></div>
+  <div id="light-button6" class="btn"><span class="button-texta">DOWN</span></div>
+  <div id="light-button7" class="btn"><span class="button-texta">STOP</span></div>
+
+  <!-- READOUTS -->
+  <div id="gamepadStatus">Gamepad status: N/A</div>
+  <div id="controlMode">Control mode: keyboard</div>
+  <div id="joystickValue">Steering: 90</div>
+  <div id="throttleValue">Throttle: 100</div>
+  <div id="speedValue">Speed: 0 m/s</div>
+  <div id="directionStatus">Direction: stopped</div>
+  <div id="vehicleStatus">Driving status: unknown</div>
+
+  <!-- Max speed slider -->
+  <div id="speedLimitContainer">
+    <div style="font-weight:bold; margin-bottom:6px;">Max speed limit (symmetric)</div>
+    <input id="maxSpeedSlider" type="range" min="0" max="100" value="40" step="1"/>
+    <div id="maxSpeedLabel" style="margin-top:6px; font-size:13px;">Δ 40 → fwd 140 / rev 60</div>
+    <div style="margin-top:6px; font-size:12px; line-height:1.4;">
+      Hold <span class="kbd">W</span> to drive forward, <span class="kbd">S</span> to reverse. Release returns to neutral (100, stop).
+    </div>
+  </div>
+
+  <!-- Steering trim -->
+  <div id="trimContainer">
+    <div style="font-weight:bold; width:100%;">Steering trim (affects auto-center)</div>
+    <button id="trimLeft" class="mini">Trim L -</button>
+    <div>Trim: <span id="trimValue">0</span></div>
+    <button id="trimRight" class="mini">Trim R +</button>
+    <button id="trimReset" class="mini" title="Reset">Reset</button>
+    <div style="width:100%; font-size:12px;">Release <span class="kbd">A/D</span> → auto-center to (90 + trim).</div>
+  </div>
+
+  <!-- Fine throttle zone -->
+  <div id="fineThrottleContainer">
+    <div style="font-weight:bold; margin-bottom:6px;">Fine throttle zone (smoother near neutral)</div>
+    <label style="font-size:12px;">Fine zone width (±N):</label>
+    <input id="fineZoneSlider" type="range" min="0" max="30" value="12" step="1"/>
+    <label style="font-size:12px;">Fine step inside zone:</label>
+    <input id="fineStepSlider" type="range" min="1" max="5" value="1" step="1"/>
+    <label style="font-size:12px;">Coarse step outside zone:</label>
+    <input id="coarseStepSlider" type="range" min="1" max="6" value="3" step="1"/>
+    <div id="fineZoneLabel" style="margin-top:6px; font-size:13px;"></div>
+    <div style="margin-top:6px; font-size:12px; line-height:1.4;">
+      Example: if width = 10, then 100±10 (i.e., 90–110) uses the smaller step; outside uses the larger step.
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    document.body.style.zoom = "100%";
+  </script>
+
+  <script src="./ayame.js"></script>
+  <script src="./main.js"></script>
+
+  <script>
+    // ====== Constants and State ======
+    let isConnected = false;
+    let reverse = false;               // for gamepad toggle only
+    let controlMode = 'keyboard';
+    let gamepadConnected = false;
+
+    const STEER_MIN = 40;
+    const STEER_MAX = 180;
+    const STEER_CENTER = 90;
+
+    let steerTrim = 0;                 // ±30
+    let steering_cmd = STEER_CENTER;
+    let throttle_cmd = 100;            // 0..200, 100=neutral
+    let maxDelta = 40;                 // speed caps around 100
+
+    // Fine throttle zone params
+    let fineZone = 12;                 // |throttle-100| <= fineZone -> fineStep
+    let fineStep = 1;                  // step when inside fine zone
+    let coarseStep = 3;                // step when outside
+
+    // Utility accessors
+    const getSteerCenter = () => Math.max(STEER_MIN, Math.min(STEER_MAX, STEER_CENTER + steerTrim));
+    const getThrottleCaps = () => ({ lo: Math.max(0, 100 - maxDelta), hi: Math.min(200, 100 + maxDelta) });
+
+    // ====== WebRTC Setup ======
+    const options = Ayame.defaultOptions;
+    options.clientId = clientId ? clientId : options.clientId;
+    if (signalingKey) options.signalingKey = signalingKey;
+    options.video.direction = 'recvonly';
+    options.audio.direction = 'recvonly';
+    const remoteVideo = document.querySelector('#remote-video');
+    const placeholder = document.querySelector('#placeholder');
+    let reConnect = true;
+    let dataChannel = null;
+    const label = 'WEBDC';
+
+    const disconnect = () => {
+      reConnect = false;
+      if (conn) conn.disconnect();
+    };
+
+    async function startConn() {
+      let roomId_number = document.querySelector("#roomIdInput").value.trim();
+      let roomId = roomId_number + ".rtc";
+      reConnect = true;
+      options.video.codec = videoCodec;
+      conn = Ayame.connection(signalingUrl, roomId, options, true);
+      conn.on('open', async (e) => {
+        dataChannel = await conn.createDataChannel(label);
+        if (dataChannel) dataChannel.onmessage = onMessage;
+      });
+      conn.on('addstream', (e) => {
+        remoteVideo.srcObject = e.stream;
+        remoteVideo.style.display = 'block';
+        placeholder.style.display = 'none';
+      });
+      conn.on('datachannel', (channel) => {
+        if (!dataChannel) {
+          dataChannel = channel;
+          dataChannel.onmessage = onMessage;
+          // Initialize center + neutral upon channel ready
+          steering_cmd = getSteerCenter();
+          throttle_cmd = 100;
+          send_pwm_command(1, steering_cmd);
+          send_pwm_command(6, throttle_cmd);
+        }
+      });
+      conn.on('disconnect', async (e) => {
+        remoteVideo.srcObject = null;
+        remoteVideo.style.display = 'none';
+        placeholder.style.display = 'block';
+        dataChannel = null;
+        if (reConnect) await conn.connect(null);
+      });
+      await conn.connect(null);
+    }
+
+    function onMessage(e) { /* reserved */ }
+
+    // ====== Gamepad Integration (kept; also capped by slider) ======
+    function updateGamepadStatusUI(connected) {
+      const statusText = connected ? 'connected' : 'not connected';
+      document.getElementById('gamepadStatus').textContent = `Gamepad status: ${statusText}`;
+    }
+    window.addEventListener('gamepadconnected', function() {
+      gamepadConnected = true;
+      controlMode = 'gamepad';
+      document.getElementById('controlMode').textContent = `Control mode: ${controlMode}`;
+      updateGamepadStatusUI(true);
+    });
+    window.addEventListener('gamepaddisconnected', function() {
+      gamepadConnected = false;
+      controlMode = 'keyboard';
+      document.getElementById('controlMode').textContent = `Control mode: ${controlMode}`;
+      updateGamepadStatusUI(false);
+    });
+
+    function pollGamepad() {
+      const gamepads = navigator.getGamepads();
+      if (gamepads[0]) {
+        const gamepad = gamepads[0];
+        if (gamepad.buttons[6].pressed) {
+          updateVehicleStatus('Neutral');
+        } else if (gamepad.buttons[5].pressed) {
+          updateVehicleStatus('Forward'); reverse = false;
+        } else if (gamepad.buttons[4].pressed) {
+          updateVehicleStatus('Reverse'); reverse = true;
+        } else if (gamepad.buttons[11].pressed) {
+          updateVehicleStatus('Drive');
+        } else if (gamepad.buttons[10].pressed) {
+          updateVehicleStatus('Rev');
+        }
+
+        // Steering
+        let axis0 = -(gamepad.axes[0]+0.30);
+        const steer = Math.round((1 - axis0) * 90);
+        steering_cmd = Math.max(STEER_MIN, Math.min(STEER_MAX, steer));
+        document.getElementById('joystickValue').textContent = `Steering: ${steering_cmd}`;
+
+        // Throttle with caps
+        const caps = getThrottleCaps();
+        if (reverse) {
+          throttle_cmd = 100 - Math.round(gamepad.buttons[7].value * (100 - caps.lo));
+          throttle_cmd = Math.max(caps.lo, throttle_cmd);
+        } else {
+          throttle_cmd = 100 + Math.round(gamepad.buttons[7].value * (caps.hi - 100));
+          throttle_cmd = Math.min(caps.hi, throttle_cmd);
+        }
+        document.getElementById('throttleValue').textContent = `Throttle: ${throttle_cmd}`;
+        const speed = Math.round(Math.abs(throttle_cmd - 100) * 0.18);
+        document.getElementById('speedValue').textContent = `Speed: ${speed} m/s`;
+
+        send_pwm_command(1, steering_cmd);
+        send_pwm_command(6, throttle_cmd);
+      }
+    }
+    setInterval(() => { if (controlMode === 'gamepad') pollGamepad(); }, 200);
+    function updateVehicleStatus(status) {
+      document.getElementById('vehicleStatus').textContent = `Driving status: ${status}`;
+    }
+
+    // ====== Keyboard: Arrow keys (legacy) ======
+    window.addEventListener('keydown', function(event) {
+      if (controlMode !== 'keyboard') return;
+      if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','r','R','s','S'].includes(event.key)) event.preventDefault();
+      if (event.key === 'ArrowLeft') {
+        steering_cmd = Math.max(steering_cmd - 1, STEER_MIN);
+        document.getElementById('joystickValue').textContent = `Steering: ${steering_cmd}`;
+        send_pwm_command(1, steering_cmd);
+      } else if (event.key === 'ArrowRight') {
+        steering_cmd = Math.min(steering_cmd + 1, STEER_MAX);
+        document.getElementById('joystickValue').textContent = `Steering: ${steering_cmd}`;
+        send_pwm_command(1, steering_cmd);
+      } else if (event.key === 'ArrowUp') {
+        const caps = getThrottleCaps();
+        const target = Math.min(throttle_cmd + 1, caps.hi);
+        setThrottleWithBrake(target);
+        updateThrottleUI();
+        send_pwm_command(6, throttle_cmd);
+      } else if (event.key === 'ArrowDown') {
+        const caps = getThrottleCaps();
+        const target = Math.max(throttle_cmd - 1, caps.lo);
+        setThrottleWithBrake(target);
+        updateThrottleUI();
+        send_pwm_command(6, throttle_cmd);
+      } else if (event.key === 'r' || event.key === 'R') {
+        reverse = !reverse;
+        document.getElementById('directionStatus').textContent = `Direction: ${reverse ? 'reverse' : 'forward'}`;
+      }
+    });
+
+    // ====== Keyboard: WASD (primary) with fine zone ======
+    const holdTimers = { w:null, s:null, a:null, d:null };
+    const keyHeld = { w:false, s:false, a:false, d:false };
+
+    function startHold(key, fn) {
+      if (holdTimers[key]) return;
+      holdTimers[key] = setInterval(fn, 30);
+    }
+    function stopHold(key) {
+      if (holdTimers[key]) { clearInterval(holdTimers[key]); holdTimers[key] = null; }
+    }
+
+    function updateSteerUI() {
+      document.getElementById('joystickValue').textContent = `Steering: ${steering_cmd}`;
+    }
+    function updateThrottleUI() {
+      document.getElementById('throttleValue').textContent = `Throttle: ${throttle_cmd}`;
+      const speed = Math.round(Math.abs(throttle_cmd - 100) * 0.18);
+      document.getElementById('speedValue').textContent = `Speed: ${speed} m/s`;
+    }
+
+    function getThrottleStep() {
+      const dist = Math.abs(throttle_cmd - 100);
+      return (dist <= fineZone) ? fineStep : coarseStep;
+    }
+
+    window.addEventListener('keydown', function(e) {
+      if (controlMode !== 'keyboard') return;
+      const k = e.key.toLowerCase();
+      if (!['w','a','s','d'].includes(k)) return;
+      e.preventDefault();
+      if (keyHeld[k]) return; // ignore auto-repeat
+      keyHeld[k] = true;
+
+      const caps = getThrottleCaps();
+
+      if (k === 'w') {
+        document.getElementById('directionStatus').textContent = 'Direction: forward';
+        startHold('w', () => {
+          const step = getThrottleStep();
+          const target = Math.min(throttle_cmd + step, caps.hi);
+          setThrottleWithBrake(target);
+          updateThrottleUI();
+          send_pwm_command(6, throttle_cmd);
+        });
+      } else if (k === 's') {
+        document.getElementById('directionStatus').textContent = 'Direction: reverse';
+        startHold('s', () => {
+          const step = getThrottleStep();
+          const target = Math.max(throttle_cmd - step, caps.lo);
+          setThrottleWithBrake(target);
+          updateThrottleUI();
+          send_pwm_command(6, throttle_cmd);
+        });
+      } else if (k === 'a') {
+        startHold('a', () => {
+          steering_cmd = Math.max(steering_cmd - 2, STEER_MIN);
+          updateSteerUI();
+          send_pwm_command(1, steering_cmd);
+        });
+      } else if (k === 'd') {
+        startHold('d', () => {
+          steering_cmd = Math.min(steering_cmd + 2, STEER_MAX);
+          updateSteerUI();
+          send_pwm_command(1, steering_cmd);
+        });
+      }
+    });
+
+    window.addEventListener('keyup', function(e) {
+      if (controlMode !== 'keyboard') return;
+      const k = e.key.toLowerCase();
+      if (!['w','a','s','d'].includes(k)) return;
+      e.preventDefault();
+      keyHeld[k] = false;
+
+      if (k === 'w' || k === 's') {
+        stopHold(k);
+        setThrottleWithBrake(100);     // release → neutral (stop)
+        updateThrottleUI();
+        document.getElementById('directionStatus').textContent = 'Direction: stopped';
+        send_pwm_command(6, throttle_cmd);
+      } else if (k === 'a' || k === 'd') {
+        stopHold(k);
+        steering_cmd = getSteerCenter();  // release → auto-center (with trim)
+        updateSteerUI();
+        send_pwm_command(1, steering_cmd);
+      }
+    });
+
+    // ====== Buttons (existing) ======
+    document.getElementById('light-button1').onclick = startConn;
+    document.getElementById('light-button2').onclick = disconnect;
+    document.getElementById('light-button3').onclick = () => { steering_cmd = Math.max(steering_cmd - 3, STEER_MIN); updateSteerUI(); send_pwm_command(1, steering_cmd); };
+    document.getElementById('light-button4').onclick = () => { steering_cmd = Math.min(steering_cmd + 3, STEER_MAX); updateSteerUI(); send_pwm_command(1, steering_cmd); };
+    document.getElementById('light-button5').onclick = () => { const caps = getThrottleCaps(); setThrottleWithBrake(Math.min(throttle_cmd + 1, caps.hi)); updateThrottleUI(); send_pwm_command(6, throttle_cmd); };
+    document.getElementById('light-button6').onclick = () => { const caps = getThrottleCaps(); setThrottleWithBrake(Math.max(throttle_cmd - 1, caps.lo)); updateThrottleUI(); send_pwm_command(6, throttle_cmd); };
+    document.getElementById('light-button7').onclick = () => { setThrottleWithBrake(100); updateThrottleUI(); send_pwm_command(6, throttle_cmd); };
+
+    // ====== Trim UI ======
+    const trimValueEl = document.getElementById('trimValue');
+    function updateTrimUI() { trimValueEl.textContent = String(steerTrim); }
+    document.getElementById('trimLeft').onclick = () => {
+      steerTrim = Math.max(-30, steerTrim - 1);
+      updateTrimUI();
+      steering_cmd = getSteerCenter();
+      updateSteerUI();
+      send_pwm_command(1, steering_cmd);
+    };
+    document.getElementById('trimRight').onclick = () => {
+      steerTrim = Math.min(30, steerTrim + 1);
+      updateTrimUI();
+      steering_cmd = getSteerCenter();
+      updateSteerUI();
+      send_pwm_command(1, steering_cmd);
+    };
+    document.getElementById('trimReset').onclick = () => {
+      steerTrim = 0; updateTrimUI();
+      steering_cmd = getSteerCenter();
+      updateSteerUI();
+      send_pwm_command(1, steering_cmd);
+    };
+    updateTrimUI();
+
+    // ====== Speed limit slider ======
+    const maxSpeedSlider = document.getElementById('maxSpeedSlider');
+    const maxSpeedLabel = document.getElementById('maxSpeedLabel');
+    function updateMaxSpeedLabel() {
+      const caps = getThrottleCaps();
+      maxSpeedLabel.textContent = `Δ ${maxDelta} → fwd ${caps.hi} / rev ${caps.lo}`;
+    }
+    maxSpeedSlider.addEventListener('input', () => {
+      maxDelta = parseInt(maxSpeedSlider.value, 10) || 0;
+      updateMaxSpeedLabel();
+      // If current throttle exceeds new caps, clamp to within caps
+      const caps = getThrottleCaps();
+      if (throttle_cmd > 100) throttle_cmd = Math.min(throttle_cmd, caps.hi);
+      if (throttle_cmd < 100) throttle_cmd = Math.max(throttle_cmd, caps.lo);
+      updateThrottleUI();
+      send_pwm_command(6, throttle_cmd);
+    });
+    updateMaxSpeedLabel();
+
+    // ====== Fine zone sliders ======
+    const fineZoneSlider = document.getElementById('fineZoneSlider');
+    const fineStepSlider = document.getElementById('fineStepSlider');
+    const coarseStepSlider = document.getElementById('coarseStepSlider');
+    const fineZoneLabel = document.getElementById('fineZoneLabel');
+
+    function updateFineZoneLabel() {
+      fineZoneLabel.textContent = `Fine zone: 100±${fineZone} → [${100-fineZone}, ${100+fineZone}] ; fine step=${fineStep}, outside step=${coarseStep}`;
+    }
+    fineZoneSlider.addEventListener('input', () => { fineZone = parseInt(fineZoneSlider.value,10)||0; updateFineZoneLabel(); });
+    fineStepSlider.addEventListener('input', () => { fineStep = parseInt(fineStepSlider.value,10)||1; updateFineZoneLabel(); });
+    coarseStepSlider.addEventListener('input', () => { coarseStep = parseInt(coarseStepSlider.value,10)||3; updateFineZoneLabel(); });
+    updateFineZoneLabel();
+
+    // ====== Throttle helpers (respect caps) ======
+    function needsBrakeTransition(prev, target) {
+      return (prev > 100 && target < 100) || (prev < 100 && target > 100);
+    }
+    async function setThrottleWithBrake(target) {
+      const prev = throttle_cmd;
+      const caps = getThrottleCaps();
+      if (needsBrakeTransition(prev, target)) {
+        throttle_cmd = 100;
+        send_pwm_command(6, throttle_cmd);
+        await new Promise(r => setTimeout(r, 250));
+      }
+      if (target < 100) {
+        target = Math.max(target, caps.lo);
+      } else if (target > 100) {
+        target = Math.min(target, caps.hi);
+      } else {
+        target = 100;
+      }
+      throttle_cmd = target;
+    }
+
+    // ====== Sender ======
+    function send_pwm_command(pwm_index, value) {
+      const byte1 = 0xCC, byte2 = 0x03, byte3 = 0x00 + pwm_index, byte4 = 0xFA;
+      const byte5 = parseInt(value);
+      const bytes = new Uint8Array([byte1, byte2, byte3, byte4, byte5]);
+      if (dataChannel && dataChannel.readyState === 'open') {
+        dataChannel.send(bytes);
+      }
+    }
+  </script>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
