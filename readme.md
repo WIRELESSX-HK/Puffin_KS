@@ -32,6 +32,6 @@ Wait for the LEDs when Blue LED is blinking and all other LEDs are on that means
 <img width="643" height="458" alt="Screenshot 2025-07-21 at 5 21 33 PM" src="https://github.com/user-attachments/assets/cca34912-9b34-43ab-823d-1c4aaec7ef34" /><br>
 ### Step 3: Use control panel 
 Use the control panel URL below to quicly test your puffin board video streaming and other features<br> 
-https://www.wirelessx.io/html/h2up/control_panel/puffin_control_panel.html<br>
+[Online Control Panel](https://www.wx-link.com/webapp/control-panel/puffin_control_panel.html)
 Type in your puffin ID no. on the left column and click on "connect puffin". You should see the video windows is trying to get video. after a few seconds you should be able to see live video streaming<br>
 <img width="1030" height="621" alt="Screenshot 2025-07-21 at 5 22 40 PM" src="https://github.com/user-attachments/assets/74f5c7fc-69e5-4813-aa7a-12161118aa58" /><br>
