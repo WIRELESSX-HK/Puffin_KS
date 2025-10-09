@@ -9,9 +9,52 @@ Open your RC car, take out the Radio receiver and connect ESC and servo to the c
 <img width="1008" height="415" alt="Screenshot 2025-07-21 at 2 52 06 PM" src="https://github.com/user-attachments/assets/29599d76-b217-445c-bbbb-59fd2e96062d" /><br>
 Connect Servo to Pin 2 4 6, namely GND, VCC, PWM1, and connect ESC to Pin 1 3 5, namely GND VCC PWM2. That's it all !  
 ## Control Software 
-Download the zip file 4g_rc_car.zip. unzip the file. In the folder you will see a html file called "Puffin_RC_model.html", double click on it. <br>
+Download the zip file RC_cars_intl.zip. unzip the file. In the folder you will see a html file called "Puffin_RC_model.html", double click on it. <br>
 Type in your ID no. and click on "connect", you should be able to see live video streaming and you can control the car using the buttons on the control panel. <br>
 <img width="1348" height="632" alt="Screenshot 2025-07-21 at 6 57 59 PM" src="https://github.com/user-attachments/assets/8a2fe7af-9916-410c-bc53-56961cacbb9e" /><br>
+## Different Control Software
+You can modify the source code of "Puffin_RC_model.html" or use a different control software <br>
+For examle you can use the "puffin_RC_model_keyboard_wasd_2ESC_4PWM" [here](https://github.com/WIRELESSX-HK/Puffin_KS/blob/main/RC_cars/puffin_RC_model_keyboard_wasd_2ESC_4PWM.html)<br>
+put "puffin_RC_model_keyboard_wasd_2ESC_4PWM.html" file in the unzipped folder (previous step), double click on it. See the picture below, in this new control software you can use w a s d to control steering and forward/backward. <br>
+On the top left corner <br>
+### ⚙️ Neutral Offset Configuration (Important for ESC)
+
+When using the Puffin board to control your RC car or vehicle, setting the **Neutral Offset** is **critical** for correct ESC behavior.
+
+#### 🔍 What is Neutral Offset?
+
+The **Neutral Offset** is the PWM threshold value that tells the ESC when the vehicle should be **idle**, **move forward**, or **reverse**.
+
+- If the PWM value is **above** the neutral offset, the car moves **forward**.
+- If it's **below**, the car goes **in reverse**.
+- At the exact offset, the car remains **stationary**.
+
+Different ESCs have different neutral points — some start responding at **110**, others at **130** or even higher.
+
+### 📊 Typical Neutral Offset Values
+
+| ESC Type           | Approximate Neutral Offset |
+|--------------------|----------------------------|
+| Generic ESC (Type A) | 110                        |
+| Generic ESC (Type B) | 130                        |
+
+### 🧪 How to Test & Calibrate
+
+1. **Lift the wheels off the ground** to avoid accidental movement.
+2. Power on your system.
+3. Slowly increase the PWM value from 100 upwards.
+4. Note the point at which the wheels begin to move forward.
+5. Set this value as your `neutral_offset` parameter in your configuration.
+
+### 💡 Tips
+
+- Incorrect neutral offset may cause your car to move unintentionally when idle.
+- You can include this value in your software or configuration file (e.g., YAML or JSON) for consistent behavior on every startup.
+- Always test in a safe environment before driving on the ground.
+
+<img width="1293" height="647" alt="Screenshot 2025-10-09 at 5 01 36 PM" src="https://github.com/user-attachments/assets/3aee3582-5c57-4d42-b4cc-0d4837400545" /><br>
+
+
 ## Modify speed /steer settings 
 Open the source code of Puffin_RC_model.html. The section below defines the speed and steer settings of the car. You can fine tune it by changing the the numbers or use **chatGPT** to help change the parameters<br>
 <pre>let axis0 = -(gamepad.axes[0]+0.30);
