@@ -1,5 +1,18 @@
 # Puffin 4G Remote Control Software
+---
+Last UAV application is in **UAV_pro**
 
+Please read the user manual for instructions 
+
+---
+
+**Video tutorial** is on youtube, https://www.youtube.com/playlist?list=PLKhFZhesT3kcFqfo0BxmuZGX8X0ww12rm
+
+**Business contact** sales@wx-link.com 
+
+**Discord** https://discord.gg/nKpJcpvw9U
+
+---
 This repository contains different control software packages for the Puffin 4G module:
 
 - **quaddrones/**: control software for drone operation
