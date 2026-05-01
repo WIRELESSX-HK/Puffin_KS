@@ -1,5 +1,8 @@
 # UAV Pro Puffin
 
+**Video tutorial** is on youtube, https://www.youtube.com/playlist?list=PLKhFZhesT3kcFqfo0BxmuZGX8X0ww12rm
+
+---
 **UAV Pro Puffin** is a project derived from the Puffin platform, specifically designed for professional UAV remote connectivity.
 
 It enables reliable long-range communication between drones and ground control stations over 4G/5G networks. This version is intended for users who are already familiar with **ArduPilot, PX4, MAVLink, Mission Planner, and QGroundControl**.
