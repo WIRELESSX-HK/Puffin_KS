@@ -2,6 +2,10 @@
 
 **Video tutorial** is on youtube, https://www.youtube.com/playlist?list=PLKhFZhesT3kcFqfo0BxmuZGX8X0ww12rm
 
+**Business contact** sales@wx-link.com 
+
+**Discord** https://discord.gg/nKpJcpvw9U
+
 ---
 **UAV Pro Puffin** is a project derived from the Puffin platform, specifically designed for professional UAV remote connectivity.
 
